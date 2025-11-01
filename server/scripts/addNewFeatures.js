@@ -42,6 +42,15 @@ const addNewFeatures = async () => {
       END $$;
     `);
 
+    // Create print_status ENUM
+    await client.query(`
+      DO $$ BEGIN
+        CREATE TYPE print_status AS ENUM ('pending', 'printing', 'completed', 'failed');
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
+    `);
+
     // Add return_days column to products table
     await client.query(`
       ALTER TABLE products 
@@ -63,6 +72,15 @@ const addNewFeatures = async () => {
       ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP
     `);
     console.log('✅ Added approval tracking columns to orders table');
+
+    // Add print_status and print_error columns to orders table
+    await client.query(`
+      ALTER TABLE orders 
+      ADD COLUMN IF NOT EXISTS print_status print_status DEFAULT 'pending',
+      ADD COLUMN IF NOT EXISTS print_error TEXT,
+      ADD COLUMN IF NOT EXISTS printed_at TIMESTAMP
+    `);
+    console.log('✅ Added print tracking columns to orders table');
 
     // Create support_tickets table
     await client.query(`
@@ -128,6 +146,21 @@ const addNewFeatures = async () => {
     `);
     console.log('✅ Created notifications table');
 
+    // Create print_history table to track all print attempts
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS print_history (
+        id SERIAL PRIMARY KEY,
+        order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
+        status print_status NOT NULL,
+        error_message TEXT,
+        printer_name VARCHAR(255),
+        printer_ip VARCHAR(50),
+        attempts INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ Created print_history table');
+
     // Create indexes for better performance
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_support_tickets_user ON support_tickets(user_id);
@@ -139,12 +172,14 @@ const addNewFeatures = async () => {
       CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
       CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read);
       CREATE INDEX IF NOT EXISTS idx_orders_approval_status ON orders(approval_status);
+      CREATE INDEX IF NOT EXISTS idx_print_history_order ON print_history(order_id);
+      CREATE INDEX IF NOT EXISTS idx_orders_print_status ON orders(print_status);
     `);
     console.log('✅ Created indexes for new tables');
 
     console.log('✅ All new features added successfully!');
-    console.log('📊 New tables: support_tickets, ticket_responses, return_requests, notifications');
-    console.log('📊 Updated tables: products (return_days), orders (approval_status, approved_by, approved_at)');
+    console.log('📊 New tables: support_tickets, ticket_responses, return_requests, notifications, print_history');
+    console.log('📊 Updated tables: products (return_days), orders (approval_status, approved_by, approved_at, print_status, print_error, printed_at)');
     
   } catch (error) {
     console.error('❌ Error adding new features:', error);
@@ -154,14 +189,19 @@ const addNewFeatures = async () => {
   }
 };
 
-// Run the migration
-addNewFeatures()
-  .then(() => {
-    console.log('🎉 Database migration completed!');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('💥 Database migration failed:', error);
-    process.exit(1);
-  });
+// Run the migration if called directly (not imported)
+if (require.main === module) {
+  addNewFeatures()
+    .then(() => {
+      console.log('🎉 Database migration completed!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('💥 Database migration failed:', error);
+      process.exit(1);
+    });
+}
+
+// Export for use in other modules
+module.exports = addNewFeatures;
 
