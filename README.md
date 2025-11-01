@@ -1,3 +1,8 @@
+# 🛍️ DressShop
+
+![GitHub repo size](https://img.shields.io/github/repo-size/kiruuuuuuu/dress-shop)
+![GitHub last commit](https://img.shields.io/github/last-commit/kiruuuuuuu/dress-shop)
+![GitHub stars](https://img.shields.io/github/stars/kiruuuuuuu/dress-shop?style=social)
 # DressShop - Full-Stack Online Dress Shopping Portal
 
 A modern, fully-featured e-commerce platform for dress shopping with role-based access control, secure payment integration, and a beautiful mobile-responsive UI.
