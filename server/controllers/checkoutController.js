@@ -451,16 +451,9 @@ const verifyPayment = async (req, res) => {
         [razorpay_payment_id || 'mock_payment_' + Date.now(), 'mock_signature_' + Date.now(), order.id]
       );
       
-      // Trigger automatic bill print
-      try {
-        const printerService = require('../services/printerService');
-        console.log('🖨️ Attempting to print bill for order:', order.id);
-        await printerService.printOrderBill(order.id);
-        console.log('✅ Print completed or skipped');
-      } catch (printError) {
-        console.error('Failed to auto-print bill:', printError);
-        // Don't fail the order if printing fails
-      }
+      // Trigger automatic bill print - DISABLED to fix checkout hanging
+      // TODO: Re-enable after debugging printer service
+      console.log('⚠️ Auto-print disabled to prevent checkout hanging');
 
       // Clear user's cart
       await client.query('DELETE FROM cart_items WHERE user_id = $1', [userId]);
@@ -620,14 +613,9 @@ const verifyPayment = async (req, res) => {
       [razorpay_payment_id, razorpay_signature, order.id]
     );
     
-    // Trigger automatic bill print
-    try {
-      const printerService = require('../services/printerService');
-      await printerService.printOrderBill(order.id);
-    } catch (printError) {
-      console.error('Failed to auto-print bill:', printError);
-      // Don't fail the order if printing fails
-    }
+    // Trigger automatic bill print - DISABLED to fix checkout hanging
+    // TODO: Re-enable after debugging printer service
+    console.log('⚠️ Auto-print disabled to prevent checkout hanging');
 
     // Clear user's cart
     await client.query('DELETE FROM cart_items WHERE user_id = $1', [userId]);
