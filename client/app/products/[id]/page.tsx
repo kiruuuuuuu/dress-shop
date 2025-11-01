@@ -85,7 +85,7 @@ export default function ProductDetailPage() {
         {/* Product Image */}
         <div className="relative h-96 md:h-[600px] bg-gray-200 rounded-lg overflow-hidden">
           <Image
-            src={product.image_url || '/placeholder.jpg'}
+            src={product.image_path || product.image_url || '/placeholder.jpg'}
             alt={product.name}
             fill
             className="object-cover"
@@ -116,7 +116,7 @@ export default function ProductDetailPage() {
           {/* Price */}
           <div className="mb-6">
             <span className="text-4xl font-bold text-primary-600">
-              ${parseFloat(product.price).toFixed(2)}
+              ₹{parseFloat(product.price).toFixed(2)}
             </span>
           </div>
 

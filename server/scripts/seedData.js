@@ -8,9 +8,9 @@ async function seedDatabase() {
     // Create admin user
     const adminPassword = await bcrypt.hash('admin123', 10);
     await pool.query(
-      `INSERT INTO users (name, email, password_hash, role)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (email) DO NOTHING`,
+      `INSERT INTO users (name, email, password_hash, role, email_verified)
+       VALUES ($1, $2, $3, $4, TRUE)
+       ON CONFLICT (email) DO UPDATE SET email_verified = TRUE`,
       ['Admin User', 'admin@example.com', adminPassword, 'admin']
     );
     console.log('✅ Admin user created (email: admin@example.com, password: admin123)');
@@ -18,9 +18,9 @@ async function seedDatabase() {
     // Create manager user
     const managerPassword = await bcrypt.hash('manager123', 10);
     await pool.query(
-      `INSERT INTO users (name, email, password_hash, role)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (email) DO NOTHING`,
+      `INSERT INTO users (name, email, password_hash, role, email_verified)
+       VALUES ($1, $2, $3, $4, TRUE)
+       ON CONFLICT (email) DO UPDATE SET email_verified = TRUE`,
       ['Manager User', 'manager@example.com', managerPassword, 'manager']
     );
     console.log('✅ Manager user created (email: manager@example.com, password: manager123)');
@@ -28,20 +28,20 @@ async function seedDatabase() {
     // Create customer user
     const customerPassword = await bcrypt.hash('customer123', 10);
     await pool.query(
-      `INSERT INTO users (name, email, password_hash, role)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (email) DO NOTHING`,
+      `INSERT INTO users (name, email, password_hash, role, email_verified)
+       VALUES ($1, $2, $3, $4, TRUE)
+       ON CONFLICT (email) DO UPDATE SET email_verified = TRUE`,
       ['Customer User', 'customer@example.com', customerPassword, 'customer']
     );
     console.log('✅ Customer user created (email: customer@example.com, password: customer123)');
 
     // Create categories
     const categories = [
-      ['Dresses', 'Beautiful dresses for all occasions'],
-      ['Tops', 'Stylish tops and blouses'],
-      ['Bottoms', 'Skirts and pants'],
-      ['Accessories', 'Complete your look with accessories'],
-      ['Shoes', 'Footwear for every style']
+      ['Sarees', 'Traditional and modern sarees for every occasion'],
+      ['Tops', 'Blouses, kurtas, and stylish tops'],
+      ['Bottoms', 'Petticoats, leggings, and traditional bottoms'],
+      ['Accessories', 'Jewelry, bangles, and traditional accessories'],
+      ['Casual Wear', 'Casual and everyday wear collection']
     ];
 
     for (const [name, description] of categories) {
@@ -69,92 +69,92 @@ async function seedDatabase() {
     // Create products
     const products = [
       {
-        name: 'Elegant Evening Dress',
-        description: 'A stunning evening dress perfect for special occasions',
-        price: 129.99,
+        name: 'Silk Saree - Red',
+        description: 'Traditional silk saree in vibrant red color',
+        price: 3999,
         stock: 15,
-        category: 'Dresses',
+        category: 'Sarees',
         image_url: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=500',
         return_days: 30
       },
       {
-        name: 'Summer Floral Dress',
-        description: 'Light and breezy dress with beautiful floral patterns',
-        price: 79.99,
+        name: 'Cotton Saree - Pastel',
+        description: 'Elegant cotton saree with floral patterns',
+        price: 1499,
         stock: 25,
-        category: 'Dresses',
+        category: 'Sarees',
         image_url: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500',
         return_days: 30
       },
       {
-        name: 'Casual Maxi Dress',
-        description: 'Comfortable maxi dress for everyday wear',
-        price: 89.99,
+        name: 'Casual Wear - Kurti Set',
+        description: 'Comfortable kurti set for everyday wear',
+        price: 899,
         stock: 20,
-        category: 'Dresses',
+        category: 'Casual Wear',
         image_url: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500',
         return_days: 30
       },
       {
-        name: 'Silk Blouse',
-        description: 'Luxurious silk blouse for a sophisticated look',
-        price: 69.99,
+        name: 'Designer Blouse - Silk',
+        description: 'Stylish silk blouse with embroidery',
+        price: 1999,
         stock: 30,
         category: 'Tops',
         image_url: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500',
         return_days: 15
       },
       {
-        name: 'Cotton T-Shirt',
-        description: 'Soft and comfortable cotton t-shirt',
-        price: 29.99,
+        name: 'Traditional Kurti',
+        description: 'Elegant cotton kurti with traditional prints',
+        price: 799,
         stock: 50,
         category: 'Tops',
         image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500',
         return_days: 7
       },
       {
-        name: 'Denim Jeans',
-        description: 'Classic denim jeans that never go out of style',
-        price: 79.99,
+        name: 'Leggings - Black',
+        description: 'Comfortable leggings for traditional wear',
+        price: 599,
         stock: 35,
         category: 'Bottoms',
         image_url: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=500',
         return_days: 30
       },
       {
-        name: 'Pleated Skirt',
-        description: 'Elegant pleated skirt for any occasion',
-        price: 59.99,
+        name: 'Petticoat - Silk',
+        description: 'High quality silk petticoat',
+        price: 1299,
         stock: 20,
         category: 'Bottoms',
         image_url: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500',
         return_days: 30
       },
       {
-        name: 'Leather Handbag',
-        description: 'Premium leather handbag with multiple compartments',
-        price: 149.99,
+        name: 'Traditional Handbag',
+        description: 'Beautiful traditional handbag with embroidery',
+        price: 2999,
         stock: 12,
         category: 'Accessories',
         image_url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500',
         return_days: 14
       },
       {
-        name: 'Statement Necklace',
-        description: 'Bold statement necklace to elevate any outfit',
-        price: 39.99,
+        name: 'Designer Necklace Set',
+        description: 'Elegant traditional necklace set with matching earrings',
+        price: 4999,
         stock: 40,
         category: 'Accessories',
         image_url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500',
         return_days: 7
       },
       {
-        name: 'Ankle Boots',
-        description: 'Stylish ankle boots for fall and winter',
-        price: 119.99,
+        name: 'Traditional Sandals',
+        description: 'Comfortable traditional sandals for everyday wear',
+        price: 899,
         stock: 18,
-        category: 'Shoes',
+        category: 'Accessories',
         image_url: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500',
         return_days: 30
       }

@@ -27,6 +27,14 @@ router.get('/', isAuthorized(['admin', 'manager']), getAllOrders);
 // Shared routes (customers can see their own orders, admins/managers can see any)
 router.get('/:id', getOrderById);
 router.get('/:id/bill', generateBill);
+router.post('/:id/print', isAuthorized(['admin', 'manager']), async (req, res) => {
+  try {
+    const { printBillPDF } = require('../controllers/orderController');
+    await printBillPDF(req, res);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to print bill' });
+  }
+});
 
 // Admin/Manager only routes
 router.put('/:id/status', isAuthorized(['admin', 'manager']), updateOrderStatus);

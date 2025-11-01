@@ -119,6 +119,14 @@ export default function ProfilePage() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Links</h2>
           <div className="space-y-2">
             <button
+              onClick={() => router.push('/profile/addresses')}
+              className="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition"
+            >
+              <span className="font-medium">My Addresses</span>
+              <p className="text-sm text-gray-600">Manage your shipping addresses</p>
+            </button>
+
+            <button
               onClick={() => router.push('/orders')}
               className="block w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition"
             >
@@ -141,6 +149,7 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
 
 

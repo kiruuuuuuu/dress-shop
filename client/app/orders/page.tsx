@@ -33,10 +33,15 @@ export default function OrdersPage() {
   const loadOrders = async () => {
     try {
       setIsLoading(true);
-      const data = await ordersApi.getMyOrders();
-      setOrders(data.orders);
-    } catch (error) {
+      const response = await ordersApi.getMyOrders();
+      // Backend returns: { success: true, orders: [...] }
+      // Axios wraps it in response.data
+      const ordersData = response?.data?.orders || [];
+      setOrders(Array.isArray(ordersData) ? ordersData : []);
+    } catch (error: any) {
       console.error('Error loading orders:', error);
+      // Set empty array on error to prevent undefined errors
+      setOrders([]);
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +154,7 @@ export default function OrdersPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading orders...</p>
           </div>
-        ) : orders.length === 0 ? (
+        ) : !orders || orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <svg
               className="mx-auto h-16 w-16 text-gray-400"
@@ -175,7 +180,7 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {orders.map((order) => (
+            {orders && Array.isArray(orders) && orders.map((order) => (
               <div
                 key={order.id}
                 className="bg-white rounded-lg shadow-sm p-6 border border-gray-200"
@@ -183,10 +188,10 @@ export default function OrdersPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
-                      Order #{order.id}
+                      Order {order.order_number || `#${order.id}`}
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      Placed on {new Date(order.created_at).toLocaleDateString('en-US', {
+                      Order ID: #{order.id} • Placed on {new Date(order.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
@@ -221,14 +226,21 @@ export default function OrdersPage() {
                     <div>
                       <p className="text-xs font-medium text-gray-500 uppercase">Total</p>
                       <p className="text-lg font-semibold text-gray-900 mt-1">
-                        ${parseFloat(order.total_price).toFixed(2)}
+                        ₹{parseFloat(order.total_price).toFixed(2)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-gray-500 uppercase">Payment ID</p>
-                      <p className="text-sm text-gray-900 mt-1 font-mono">
-                        {order.razorpay_payment_id?.substring(0, 20)}...
+                      <p className="text-xs font-medium text-gray-500 uppercase">Payment Status</p>
+                      <p className={`text-sm font-semibold mt-1 ${
+                        order.razorpay_payment_id ? 'text-green-600' : 'text-yellow-600'
+                      }`}>
+                        {order.razorpay_payment_id ? 'Paid' : 'Pending'}
                       </p>
+                      {order.razorpay_payment_id && (
+                        <p className="text-xs text-gray-500 mt-1 font-mono">
+                          {order.razorpay_payment_id.substring(0, 15)}...
+                        </p>
+                      )}
                     </div>
                     <div>
                       <p className="text-xs font-medium text-gray-500 uppercase">Items</p>
@@ -250,22 +262,12 @@ export default function OrdersPage() {
                       View Details
                     </button>
 
-                    {order.approval_status === 'approved' && (
-                      <button
-                        onClick={() => handleViewBill(order.id)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm flex items-center gap-1"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                        View Bill
-                      </button>
-                    )}
+                    <button
+                      onClick={() => router.push(`/orders/${order.id}/bill`)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm flex items-center gap-1"
+                    >
+                      📄 View Invoice
+                    </button>
 
                     {order.status === 'delivered' &&
                       order.approval_status === 'approved' && (
@@ -394,10 +396,10 @@ export default function OrdersPage() {
                     <td className="py-3 text-gray-900">{item.productName}</td>
                     <td className="py-3 text-right text-gray-900">{item.quantity}</td>
                     <td className="py-3 text-right text-gray-900">
-                      ${item.pricePerUnit.toFixed(2)}
+                      ₹{item.pricePerUnit.toFixed(2)}
                     </td>
                     <td className="py-3 text-right font-medium text-gray-900">
-                      ${item.total.toFixed(2)}
+                      ₹{item.total.toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -408,7 +410,7 @@ export default function OrdersPage() {
                     Subtotal:
                   </td>
                   <td className="py-3 text-right font-medium text-gray-900">
-                    ${billData.subtotal.toFixed(2)}
+                    ₹{billData.subtotal.toFixed(2)}
                   </td>
                 </tr>
                 <tr>
@@ -416,7 +418,7 @@ export default function OrdersPage() {
                     Total:
                   </td>
                   <td className="py-3 text-right text-lg font-bold text-gray-900">
-                    ${billData.total.toFixed(2)}
+                    ₹{billData.total.toFixed(2)}
                   </td>
                 </tr>
               </tfoot>

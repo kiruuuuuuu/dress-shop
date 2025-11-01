@@ -17,12 +17,21 @@ export default function HomePage() {
 
   const fetchFeaturedProducts = async () => {
     try {
-      const response = await api.get('/api/products?limit=8');
+      const response = await api.get('/api/products/featured');
       if (response.data.success) {
         setFeaturedProducts(response.data.products);
       }
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      console.error('Failed to fetch featured products:', error);
+      // Fallback to regular products if featured endpoint fails
+      try {
+        const fallbackResponse = await api.get('/api/products?limit=8');
+        if (fallbackResponse.data.success) {
+          setFeaturedProducts(fallbackResponse.data.products);
+        }
+      } catch (fallbackError) {
+        console.error('Failed to fetch products:', fallbackError);
+      }
     } finally {
       setIsLoading(false);
     }

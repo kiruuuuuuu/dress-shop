@@ -10,7 +10,7 @@ import SupportChat from '@/components/SupportChat';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Dress Shop - Premium Fashion Store',
+  title: 'Sallapuradamma textiles - Premium Fashion Store',
   description: 'Shop the latest dress collections for every occasion',
 };
 

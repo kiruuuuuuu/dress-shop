@@ -15,6 +15,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Remove Content-Type header for FormData - let axios/browser set it with boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    
     return config;
   },
   (error) => {
@@ -36,6 +42,23 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Auth API
+export const authApi = {
+  register: (data: { name: string; email: string; password: string }) =>
+    api.post('/api/auth/register', data),
+  login: (data: { email: string; password: string }) =>
+    api.post('/api/auth/login', data),
+  getMe: () => api.get('/api/auth/me'),
+  verifyEmail: (token: string) =>
+    api.get('/api/auth/verify-email', { params: { token } }),
+  resendVerification: (email: string) =>
+    api.post('/api/auth/resend-verification', { email }),
+  forgotPassword: (email: string) =>
+    api.post('/api/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) =>
+    api.post('/api/auth/reset-password', { token, password }),
+};
 
 // Support Tickets API
 export const supportApi = {
@@ -86,11 +109,14 @@ export const productsApi = {
   // Public product functions
   getAllProducts: (params?: { category?: string; minPrice?: number; maxPrice?: number; search?: string; page?: number; limit?: number }) =>
     api.get('/api/products', { params }),
+  getFeaturedProducts: () => api.get('/api/products/featured'),
   getProductById: (productId: number) => api.get(`/api/products/${productId}`),
   
   // Admin/Manager functions
-  createProduct: (data: any) => api.post('/api/products', data),
-  updateProduct: (productId: number, data: any) => api.put(`/api/products/${productId}`, data),
+  createProduct: (formData: FormData) => api.post('/api/products', formData),
+  updateProduct: (productId: number, formData: FormData) => api.put(`/api/products/${productId}`, formData),
+  toggleFeatured: (productId: number, is_featured: boolean) => 
+    api.put(`/api/products/${productId}/featured`, { is_featured }),
   deleteProduct: (productId: number) => api.delete(`/api/products/${productId}`),
 };
 
@@ -137,10 +163,12 @@ export const ordersApi = {
     api.get('/api/orders', { params }),
   getPendingApprovalOrders: (params?: { page?: number; limit?: number }) =>
     api.get('/api/orders/pending-approval', { params }),
-  updateOrderApproval: (orderId: number, approval_status: 'approved' | 'rejected') =>
-    api.put(`/api/orders/${orderId}/approval`, { approval_status }),
+  updateOrderApproval: (orderId: number, data: { approval_status: 'approved' | 'rejected' }) =>
+    api.put(`/api/orders/${orderId}/approval`, data),
   generateBill: (orderId: number) =>
     api.get(`/api/orders/${orderId}/bill`),
+  printBill: (orderId: number) =>
+    api.post(`/api/orders/${orderId}/print`),
   
   // Order stats
   getOrderStats: () => api.get('/api/orders/stats/summary'),
@@ -155,6 +183,50 @@ export const usersApi = {
     api.put(`/api/users/${userId}/role`, { role }),
   deleteUser: (userId: number) => api.delete(`/api/users/${userId}`),
   updateProfile: (data: any) => api.put('/api/users/profile', data),
+};
+
+// Address API
+export const addressesApi = {
+  getMyAddresses: () => api.get('/api/addresses'),
+  getAddressById: (id: number) => api.get(`/api/addresses/${id}`),
+  addAddress: (data: {
+    address_type?: string;
+    full_name: string;
+    mobile_number: string;
+    address_line1: string;
+    address_line2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country?: string;
+    is_default?: boolean;
+  }) => api.post('/api/addresses', data),
+  updateAddress: (id: number, data: {
+    address_type?: string;
+    full_name?: string;
+    mobile_number?: string;
+    address_line1?: string;
+    address_line2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    country?: string;
+    is_default?: boolean;
+  }) => api.put(`/api/addresses/${id}`, data),
+  deleteAddress: (id: number) => api.delete(`/api/addresses/${id}`),
+  setDefaultAddress: (id: number) => api.put(`/api/addresses/${id}/default`),
+};
+
+// Printer API
+export const printersApi = {
+  getPrinters: () => api.get('/api/printers'),
+  addPrinter: (data: { printer_name: string; printer_ip?: string; connection_type?: string }) =>
+    api.post('/api/printers', data),
+  updatePrinter: (id: number, data: { printer_name?: string; printer_ip?: string; connection_type?: string }) =>
+    api.put(`/api/printers/${id}`, data),
+  deletePrinter: (id: number) => api.delete(`/api/printers/${id}`),
+  setDefaultPrinter: (id: number) => api.put(`/api/printers/${id}/default`),
+  scanPrinters: () => api.get('/api/printers/available'),
 };
 
 export default api;

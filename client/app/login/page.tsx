@@ -65,6 +65,15 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
 
+            <div className="flex items-center justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             <Button
               type="submit"
               className="w-full"
@@ -97,6 +106,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 
 

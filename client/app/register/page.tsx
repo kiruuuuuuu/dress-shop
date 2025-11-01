@@ -19,6 +19,7 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   React.useEffect(() => {
     if (isAuthenticated) {
@@ -62,13 +63,61 @@ export default function RegisterPage() {
 
     try {
       await register(formData.name, formData.email, formData.password);
-      router.push('/');
-    } catch (error) {
+      setRegistrationSuccess(true);
+    } catch (error: any) {
       console.error('Registration failed:', error);
+      setErrors({ ...errors, submit: error.response?.data?.message || 'Registration failed' });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (registrationSuccess) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-md w-full">
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <svg
+                className="h-6 w-6 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h2>
+            <p className="text-gray-600 mb-4">
+              We've sent a verification email to <strong>{formData.email}</strong>
+            </p>
+            <p className="text-sm text-gray-600 mb-6">
+              Please check your email and click the verification link to activate your account.
+            </p>
+            <div className="space-y-4">
+              <Link href="/login">
+                <Button className="w-full">Go to Login</Button>
+              </Link>
+              <button
+                onClick={() => {
+                  setRegistrationSuccess(false);
+                  setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+                }}
+                className="text-sm text-primary-600 hover:text-primary-700"
+              >
+                Register another account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
@@ -120,6 +169,10 @@ export default function RegisterPage() {
               error={errors.confirmPassword}
             />
 
+            {errors.submit && (
+              <div className="p-3 rounded-md text-sm bg-red-50 text-red-800">{errors.submit}</div>
+            )}
+
             <Button
               type="submit"
               className="w-full"
@@ -128,6 +181,13 @@ export default function RegisterPage() {
               Sign Up
             </Button>
           </form>
+
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <p className="text-xs text-blue-800 font-semibold mb-1">📧 Email Verification Required</p>
+            <p className="text-xs text-blue-700">
+              After registration, you'll receive a verification email. Please verify your email before logging in.
+            </p>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
@@ -142,6 +202,7 @@ export default function RegisterPage() {
     </div>
   );
 }
+
 
 
 

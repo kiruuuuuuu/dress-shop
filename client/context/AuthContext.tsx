@@ -58,7 +58,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error: any) {
       const message = error.response?.data?.message || 'Login failed';
-      toast.error(message);
+      
+      // Handle email verification requirement
+      if (error.response?.data?.requires_verification) {
+        toast.error(message, {
+          duration: 5000,
+          icon: '📧',
+        });
+      } else {
+        toast.error(message);
+      }
       throw error;
     }
   };
@@ -68,9 +77,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await api.post('/api/auth/register', { name, email, password });
       
       if (response.data.success) {
-        Cookies.set('token', response.data.token, { expires: 7 });
-        setUser(response.data.user);
-        toast.success('Registration successful!');
+        // Don't set token or user - email verification required
+        // Don't redirect - show verification message
+        toast.success('Registration successful! Please check your email to verify your account.', {
+          duration: 5000,
+          icon: '📧',
+        });
       }
     } catch (error: any) {
       const message = error.response?.data?.message || 'Registration failed';
@@ -111,6 +123,7 @@ export const useAuth = () => {
   }
   return context;
 };
+
 
 
 

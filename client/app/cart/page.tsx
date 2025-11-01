@@ -84,7 +84,7 @@ export default function CartPage() {
                 </p>
                 <div className="mt-auto">
                   <p className="text-xl font-bold text-primary-600">
-                    ${parseFloat(item.price).toFixed(2)}
+                    ₹{parseFloat(item.price).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -122,7 +122,7 @@ export default function CartPage() {
 
                 {/* Subtotal */}
                 <p className="text-lg font-semibold text-gray-900 sm:mt-auto">
-                  ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                  ₹{(parseFloat(item.price) * item.quantity).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function CartPage() {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₹{total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
@@ -145,7 +145,7 @@ export default function CartPage() {
               </div>
               <div className="border-t pt-3 flex justify-between text-lg font-bold text-gray-900">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₹{total.toFixed(2)}</span>
               </div>
             </div>
 
